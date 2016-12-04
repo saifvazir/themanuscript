@@ -21,6 +21,15 @@ def checkusername(Username):
 def encrypt_password(password):
 	return hashlib.md5(password).hexdigest()
 
+def increasecount(tablename):
+	result = Count.query.all()[0]
+	result.tablename += result.tablename
+	try:
+		tmsdb.session.commit()
+	except:
+		print "error occured"
+
+
 def generateuserid(username):
 	temp = '#UOBJ'
 	temp += str(len(username))[0]
@@ -50,6 +59,7 @@ def register():
 	try:
 		tmsdb.session.add(new_entry)
 		tmsdb.session.commit()
+		increasecount(userscount)
 	except:
 		print "new user not entered some error occured"
 		return jsonify({
@@ -61,12 +71,6 @@ def register():
 			'payload':"Success"
 			'message':"User successfully created"
 			})
-
-
-
-	return jsonify({
-
-		})
 
 
 @app.route('/')
