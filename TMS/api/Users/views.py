@@ -1,5 +1,5 @@
 from TMS import app
-from flask import request
+from flask import request,jsonify
 import json
 from models import Users, tmsdb, Count
 import hashlib
@@ -7,6 +7,7 @@ import datetime
 
 def checkusername(Username):
 	
+	result=""
 	try:
 		result = Users.query.filter_by(Username=Username).first()
 	except:
@@ -21,9 +22,9 @@ def checkusername(Username):
 def encrypt_password(password):
 	return hashlib.md5(password).hexdigest()
 
-def increasecount(tablename):
+def increaseuserscount():
 	result = Count.query.all()[0]
-	result.tablename += result.tablename
+	result.userscount += 1
 	try:
 		tmsdb.session.commit()
 	except:
@@ -35,21 +36,25 @@ def generateuserid(username):
 	temp += str(len(username))[0]
 	try:
 		noofusers = Count.query.with_entities(Count.userscount)
+		print "awegrtyui"
 	except:
 		print "query not successfull"
-	temp += str(noofusers[0][0])
+	temp += str(noofusers[0][0]+1)
 	return temp
 
 @app.route('/register', methods=['POST'])
 def register():
 	data = json.loads(request.data)
 	print data
+	data = data['payload']
 	if(checkusername(data['Username'])):
 		return jsonify({
-			'payload':"failed"
-			'message':"username already exists"
-			})
+			"payload":"failed",
+			"message":"username already exists"
+			}
+			)
 
+	# print data["Username"]
 	User_id = generateuserid(data['Username'])
 	Username = data['Username']
 	Email_id = data['Email_id']
@@ -59,16 +64,16 @@ def register():
 	try:
 		tmsdb.session.add(new_entry)
 		tmsdb.session.commit()
-		increasecount(userscount)
+		increaseuserscount()
 	except:
 		print "new user not entered some error occured"
 		return jsonify({
-			'payload':"failed"
+			'payload':"failed",
 			'message':"some error occured please try again"
 			})
 
 	return jsonify({
-			'payload':"Success"
+			'payload':"Success",
 			'message':"User successfully created"
 			})
 
