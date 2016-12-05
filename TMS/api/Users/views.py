@@ -5,7 +5,7 @@ import json
 from models import Users, tmsdb, Count
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/api/v1.0/register', methods=['POST'])
 def register():
 	data = json.loads(request.data)
 	print data
