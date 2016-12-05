@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Dec 04, 2016 at 10:54 AM
+-- Generation Time: Dec 05, 2016 at 08:52 AM
 -- Server version: 10.1.16-MariaDB
 -- PHP Version: 5.5.38
 
@@ -53,7 +53,7 @@ CREATE TABLE `Count` (
 --
 
 INSERT INTO `Count` (`userscount`, `bookscount`) VALUES
-(1, 1);
+(5, 1);
 
 -- --------------------------------------------------------
 
@@ -117,7 +117,11 @@ CREATE TABLE `Users` (
 --
 
 INSERT INTO `Users` (`User_id`, `Username`, `Email_id`, `Password`, `Profile_pic`, `Age`, `Languages`, `Location`, `Genres`, `Dateentry`) VALUES
-('#UOBJ81', 'ankitesh97', 'ankiteshguptas@gmail.com', '3537460fefa4597153b1f493524efe', NULL, NULL, NULL, NULL, NULL, '2016-12-04 08:18:22');
+('#UOBJ14', 'ankityifscesrdegf', 'ankdwfwe', 'c99a11a53a3748269e3f86d7ac38df', NULL, NULL, NULL, NULL, NULL, '2016-12-04 15:08:50'),
+('#UOBJ15', 'ankitesdh97', 'ankdwfwe', 'c99a11a53a3748269e3f86d7ac38df', NULL, NULL, NULL, NULL, NULL, '2016-12-04 15:45:06'),
+('#UOBJ71', 'ankifgf', 'ankdwfwe', 'c99a11a53a3748269e3f86d7ac38df', NULL, NULL, NULL, NULL, NULL, '2016-12-04 14:05:58'),
+('#UOBJ81', 'ankitesh97', 'ankiteshguptas@gmail.com', '3537460fefa4597153b1f493524efe', NULL, NULL, NULL, NULL, NULL, '2016-12-04 08:18:22'),
+('#UOBJ91', 'ankitesh9', 'ankiteshguptas@gmail.com', '63efba8c48eae1e816e0dd969d6811', NULL, NULL, NULL, NULL, NULL, '2016-12-04 11:07:18');
 
 --
 -- Indexes for dumped tables
