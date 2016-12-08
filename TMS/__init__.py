@@ -1,10 +1,12 @@
 
 from flask import Flask
+from flask_cors import CORS
 
 app = Flask(__name__)
-# CORS(app)
+CORS(app)
 
 from TMS.api.Users import views
+from TMS.api.Books import views
 # from k_app.api.Inventory import views
 # from k_app.api.Vendors import views
 # from k_app.api.Misc import views
