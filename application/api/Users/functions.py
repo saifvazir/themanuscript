@@ -58,7 +58,6 @@ def generateuserid(username):
 	except Exception as e:
 		print str(e)
 		raise e
-	print noofusers
 	temp += str(noofusers[0][0]+1)
 	return temp
 
