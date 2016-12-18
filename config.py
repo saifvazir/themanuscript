@@ -6,7 +6,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
-    SECRET_KEY = 'this-really-needs-to-be-changed'
+    SECRET_KEY = 'the quick brown fox jumps over the lazy dog'
    # SQLALCHEMY_DATABASE_URI = "postgresql://ankitesh:postgres@localhost/test"
 
 

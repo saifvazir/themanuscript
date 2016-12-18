@@ -31,6 +31,7 @@ class Users(db.Model):
     	self.Dateentry = Dateentry
 
 
+
 class Books(db.Model):
 	__tablename__ = 'Books'
 	Book_id=db.Column(db.String(50), primary_key=True)

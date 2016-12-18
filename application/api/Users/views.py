@@ -3,7 +3,9 @@ from flask import request,jsonify,Blueprint
 import requests
 import json
 from application.models import Users,Count
+from flask import g
 from application import db
+from application import auth,jwt
 from flask import session,redirect,url_for
 from requests_oauthlib import OAuth2Session
 from boto.s3.connection import S3Connection
@@ -12,8 +14,9 @@ from boto.s3.key import Key
 oauth = OAuth()
 users = Blueprint('users', __name__)
 
-SECRET_KEY = 'development key'
-#app.secret_key = SECRET_KEY
+
+def generate_auth_token(id):
+    return jwt.dumps({'id':id})
 
 
 @users.route('/api/v1.0/register', methods=['POST'])
@@ -39,8 +42,8 @@ def register():
 			db.session.commit()
 			increaseuserscount()
 		except Exception as e:
-            db.session.rollback()
-			print(str(e))
+			db.session.rollback()
+            # print(str(e))
 			raise e
 
 		return jsonify({"payload":{
@@ -98,15 +101,17 @@ def login():
 
     if user:
         if(encrypt_password(data['Password']) == user.Password):
-            session['logged_in'] = True
+            # session['logged_in'] = True
+            token = generate_auth_token(user.User_id)
             return jsonify({
                 'success':True,
-                'message': "user authenticated successfully"
+                'message': "user authenticated successfully",
+                'token':token
                 })
         else:
             return jsonify({
                 'success':False,
-                'error_code':None
+                'error_code':None,
                 'error_message':"Wrong username or password"
                 })
 
@@ -115,4 +120,20 @@ def login():
         "error_code":None,
         'error_message':"Wrong username or password"
         })
+
+
+@users.route('/protected')
+@auth.login_required
+def protected():
+    return "this is protected"
+
+@users.route('/set_token')
+def set_token():
+    token = generate_auth_token('#UOBJ110')
+    return jsonify({
+    'success':True,
+    'message': "user authenticated successfully",
+    'token':token
+       })
+
 
