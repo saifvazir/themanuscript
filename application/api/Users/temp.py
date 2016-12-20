@@ -99,3 +99,10 @@ def callback():
         # db.session.commit()
         return redirect(url_for('index'))
         return 'Could not fetch your information.'
+
+
+
+@users.route('/generatekeys')
+def generatekeys():
+    generate_keys()
+    return "done"

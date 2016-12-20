@@ -15,21 +15,21 @@ class Users(db.Model):
     User_id = db.Column(db.String(64), primary_key=True)
     Username = db.Column(db.String(64), index=True, unique=True, nullable=False)
     Email_id = db.Column(db.String(120), index=True, unique=True, nullable=False)
-    Password= db.Column(db.String(32),nullable=False)
+    Password= db.Column(db.String(40),nullable=False)
     Profile_pic= db.Column(db.String(100))
     Age=db.Column(db.DateTime)
-    Languages=db.Column(db.String(100),nullable=False)
+    Languages=db.Column(db.String(100))
     Location=db.Column(db.String(50))
-    Genres=db.Column(db.String(150),nullable=False)
+    Genres=db.Column(db.String(150))
     Date_entry = db.Column(db.DateTime)
-    tokens = db.Column(db.String(300))
+    tokens = db.Column(db.String(1000))
 
     def __init__(self,User_id,Username,Email_id,Password,Profile_pic=None,Age=None,Languages=None,Location=None,Genres=None, Dateentry=None):
     	self.User_id = User_id
     	self.Username = Username
     	self.Email_id = Email_id
     	self.Password = Password
-    	self.Dateentry = Dateentry
+    	self.Date_entry = Dateentry
         self.tokens = None
 
 

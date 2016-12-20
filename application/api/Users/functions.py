@@ -1,8 +1,10 @@
 
 import hashlib
 import datetime
-from application.models import Users,Count
+from application.models import Users,Count,SecretKeys
 from application import db
+import random
+import string
 #from TMS import app
 from flask_oauth import OAuth
 from requests_oauthlib import OAuth2Session
@@ -75,5 +77,19 @@ def get_google_auth(state=None, token=None):
         redirect_uri=Auth.REDIRECT_URI,
         scope=Auth.SCOPE)
     return oauth
+
+def generate_keys():
+	text = string.digits+string.letters
+
+	for i in range(1,11,1):
+		key = "".join([random.choice(text) for j in range(30)])
+		new_key = SecretKeys(i, key)
+		print new_key
+		try:
+			db.session.add(new_key)
+			db.session.commit()
+		except Exception as e:
+			db.session.rollback()
+			raise e
 
 
