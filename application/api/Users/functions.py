@@ -56,12 +56,14 @@ def generateuserid(username):
 	temp += str(len(username))[0]
 	noofusers = ""
 	try:
-		noofusers = Count.query.with_entities(Count.userscount)
+		noofusers = Count.query.with_entities(Count.userscount).first()
 	except Exception as e:
 		print str(e)
 		raise e
-	temp += str(noofusers[0][0]+1)
-	return temp
+	print noofusers[0]
+	a = noofusers[0]
+	temp += str(noofusers[0]+1)
+	return {"count":a+1, "temp":temp}
 
 
 def get_google_auth(state=None, token=None):

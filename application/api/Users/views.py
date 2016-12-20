@@ -36,12 +36,14 @@ def register():
 				}}
 				)
 
-		User_id = generateuserid(data['Username'])
+		temp = generateuserid(data['Username'])
+		User_id = temp["temp"]
+		id = temp["count"]
 		Username = data['Username']
 		Email_id = data['Email_id']
 		pwd = encrypt_password(data['Password'])
 		nw = datetime.datetime.now()
-		new_entry = Users(User_id=User_id,Username=Username,Email_id=Email_id,Password=pwd,Dateentry=nw)
+		new_entry = Users(id = id, User_id=User_id,Username=Username,Email_id=Email_id,Password=pwd,Dateentry=nw)
 		try:
 			db.session.add(new_entry)
 			db.session.commit()
@@ -124,7 +126,7 @@ def login():
 			#previos tokens are present
 			else:
 				token_data = json.loads(user.tokens)["payload"]   # previous logged in session is active
-				if(len(token_data)==3):                           #max three sessions allowed
+				if(len(token_data)==2):                           #max two sessions allowed
 					token_data.pop(0)
 
 				token_data.append({"token":token, "expiration":str(curr_datetime)})
