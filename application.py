@@ -1,5 +1,5 @@
 from flask import Flask,jsonify
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
 from application.api.Users.views import users

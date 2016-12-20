@@ -1,17 +1,15 @@
 import os
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
-from app import app
-from models import tmsdb
-import config
+from application import application
+from application import db
+from application import models
 
 
-app.config.from_object(os.environ['APP_SETTINGS'])
+migrate = Migrate(application, db)
+manager = Manager(application)
 
-migrate = Migrate(app, tmsdb)
-manager = Manager(app)
-
-manager.add_command('tmsdb', MigrateCommand)
+manager.add_command('db', MigrateCommand)
 
 
 if __name__ == '__main__':

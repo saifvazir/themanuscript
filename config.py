@@ -7,6 +7,7 @@ class Config(object):
     TESTING = False
     CSRF_ENABLED = True
     SECRET_KEY = 'the quick brown fox jumps over the lazy dog'
+    SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
    # SQLALCHEMY_DATABASE_URI = "postgresql://ankitesh:postgres@localhost/test"
 
 

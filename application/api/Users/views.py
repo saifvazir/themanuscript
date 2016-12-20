@@ -44,7 +44,13 @@ def register():
 		except Exception as e:
 			db.session.rollback()
             # print(str(e))
-			raise e
+			return jsonify({"payload":{
+                "success":False,
+                "error_code":500,
+                "error_message":"internal server error",
+                "temp":str(e)
+                }})
+
 
 		return jsonify({"payload":{
             "success":True,
@@ -136,4 +142,13 @@ def set_token():
     'token':token
        })
 
+
+@users.route('/set_me')
+def set_me():
+    token = generate_auth_token('#UOBJ14')
+    return jsonify({
+    'success':True,
+    'message': "user authenticated successfully",
+    'token':token
+       })
 

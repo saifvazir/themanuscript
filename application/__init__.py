@@ -1,7 +1,8 @@
 from flask import Flask,g,jsonify
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPTokenAuth
 from itsdangerous import TimedJSONWebSignatureSerializer as JWT
+import json
 
 application = Flask(__name__)
 application.config.from_object('config.TestingConfig')
@@ -12,10 +13,13 @@ auth  = HTTPTokenAuth('Bearer')
 
 @auth.verify_token
 def verify_token(token):
+
+    token = json.loads(token)["token"]
     g.user = None
     try:
         data = jwt.loads(token)
-    except:
+    except Exception as e:
+        print(str(e))
         return False
     if 'id' in data:
         g.user = data['id']
