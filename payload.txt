@@ -1,0 +1,56 @@
+
+registration api
+
+request(post)
+{"payload":{"is_google":0(if not google auth, 1 if google auth), ""Username":"wdq", "Email_id":"waedw", "Password":"wewr"}}
+
+response from the server:
+{"payload":{
+				"success":False,
+				"error_code":500,
+				"error_message":"internal server error"
+				}})
+				//for this display custom internal server error page
+
+
+{"payload":{
+			"success":True,
+			"error_code":None,
+			"error_message": None,
+			"message":"User successfully registered"
+			}}
+
+#######################################################################################################
+login api
+request(post)
+
+{"payload":{
+"Username":"desrdf",
+"Password":"dert"
+}}
+
+
+response:
+{"payload":{
+					'success':False,
+					"error_code":500,
+					"error_message":'internal server error',
+					}}
+
+{"payload":{
+				'success':True,
+				'message': "user authenticated successfully",
+				'token':token,
+				'user_id':id
+				}}
+
+
+				"token will be given back which should be stored cliend side which should be sent for
+				further protected data requested along with userid"...make sure to store user_id locally
+
+
+{"payload":{
+				'success':False,
+				'error_code':None,
+				'error_message':"Wrong username or password"
+				}}

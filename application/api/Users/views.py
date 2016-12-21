@@ -142,19 +142,19 @@ def login():
 					}})
 
 			
-			return jsonify({
+			return jsonify({"payload":{
 				'success':True,
 				'message': "user authenticated successfully",
 				'token':token
-				})
+				}})
 		
 		#wrong password
 		else:
-			return jsonify({
+			return jsonify({"payload":{
 				'success':False,
 				'error_code':None,
 				'error_message':"Wrong username or password"
-				})
+				}})
 
 	# no such user exists
 	return jsonify({
@@ -176,4 +176,4 @@ def set_token():
 	'success':True,
 	'message': "user authenticated successfully",
 	'token':token
-	   })
+	})

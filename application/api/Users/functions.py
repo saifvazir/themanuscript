@@ -12,14 +12,14 @@ from requests_oauthlib import OAuth2Session
 #app.config.from_pyfile('config.cfg')
 
 class Auth:
-    CLIENT_ID = ('619494812049-rua6n3d06bjdu3vmb3e2sokfj14hv8gd'
-                 '.apps.googleusercontent.com')
-    CLIENT_SECRET = 'lLk4nQN-no6Oy0uO45e39N9f'
-    REDIRECT_URI = 'https://localhost:5000/api/v1.0/register/gcallback'
-    AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
-    TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
-    USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
-    SCOPE = ['profile', 'email']
+	CLIENT_ID = ('619494812049-rua6n3d06bjdu3vmb3e2sokfj14hv8gd'
+				 '.apps.googleusercontent.com')
+	CLIENT_SECRET = 'lLk4nQN-no6Oy0uO45e39N9f'
+	REDIRECT_URI = 'https://localhost:5000/api/v1.0/register/gcallback'
+	AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
+	TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
+	USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
+	SCOPE = ['profile', 'email']
 
 
 def checkusername(Username):
@@ -67,18 +67,18 @@ def generateuserid(username):
 
 
 def get_google_auth(state=None, token=None):
-    if token:
-        return OAuth2Session(Auth.CLIENT_ID, token=token)
-    if state:
-        return OAuth2Session(
-            Auth.CLIENT_ID,
-            state=state,
-            redirect_uri=Auth.REDIRECT_URI)
-    oauth = OAuth2Session(
-        Auth.CLIENT_ID,
-        redirect_uri=Auth.REDIRECT_URI,
-        scope=Auth.SCOPE)
-    return oauth
+	if token:
+		return OAuth2Session(Auth.CLIENT_ID, token=token)
+	if state:
+		return OAuth2Session(
+			Auth.CLIENT_ID,
+			state=state,
+			redirect_uri=Auth.REDIRECT_URI)
+	oauth = OAuth2Session(
+		Auth.CLIENT_ID,
+		redirect_uri=Auth.REDIRECT_URI,
+		scope=Auth.SCOPE)
+	return oauth
 
 def generate_keys():
 	text = string.digits+string.letters
