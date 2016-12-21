@@ -16,7 +16,8 @@ from boto.s3.key import Key
 oauth = OAuth()
 users = Blueprint('users', __name__)
 
-
+FOLLOWERS_PER_PAGE = 22
+# DEFAULT_PROFILE_PIC = 'aws_s3_url'
 def generate_auth_token(id):
 
 	id = random.randint(1, 10)
@@ -41,22 +42,17 @@ def register():
 		id = temp["count"]
 		Username = data['Username']
 		Email_id = data['Email_id']
-		pwd = encrypt_password(data['Password'])
+		pwd = encrypt(data['Password'])
 		nw = datetime.datetime.now()
-		new_entry = Users(id = id, User_id=User_id,Username=Username,Email_id=Email_id,Password=pwd,Dateentry=nw)
+		new_entry = Users(id = id, User_id=encrypt(User_id),Username=Username,Email_id=Email_id,Password=pwd,Dateentry=nw)
 		try:
 			db.session.add(new_entry)
 			db.session.commit()
 			increaseuserscount()
 		except Exception as e:
 			db.session.rollback()
-			# print(str(e))
-			return jsonify({"payload":{
-				"success":False,
-				"error_code":500,
-				"error_message":"internal server error",
-				"temp":str(e)
-				}})
+			print(str(e))
+			return InternalServerError()
 
 
 		return jsonify({"payload":{
@@ -112,7 +108,7 @@ def login():
 		print(str(e))
 		raise e
 	if user:
-		if(encrypt_password(data['Password']) == user.Password):
+		if(encrypt(data['Password']) == user.Password):
 			# session['logged_in'] = True
 			token = generate_auth_token(user.User_id)
 			curr_datetime = datetime.datetime.now()
@@ -120,7 +116,7 @@ def login():
 			application.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy dog'
 
 			#no previos tokens present
-			if  not user.tokens:
+			if not user.tokens:
 				token_data = [{"token":token, "expiration":str(curr_datetime)}]  #1st login
 
 			#previos tokens are present
@@ -134,18 +130,16 @@ def login():
 			try:
 				db.session.commit()
 			except Exception as e:
+				db.session.rollback()
 				print(str(e))
-				return jsonify({"payload":{
-					'success':False,
-					"error_code":500,
-					"error_message":'internal server error',
-					}})
+				return InternalServerError()
 
 			
 			return jsonify({"payload":{
 				'success':True,
 				'message': "user authenticated successfully",
-				'token':token
+				'token':token,
+				'user_id':user.User_id
 				}})
 		
 		#wrong password
@@ -177,3 +171,87 @@ def set_token():
 	'message': "user authenticated successfully",
 	'token':token
 	})
+############################################################################################################################
+###########################################apis related to following and followers module###################################
+############################################################################################################################
+
+#api to get 22 followers one at a time
+@auth.login_required
+@users.route('/api/v1.0/followers', methods=['POST'])
+def get_followers():
+	data = json.loads(request.data)["payload"]
+	UserId = data['user']
+	PageNo = data['page']
+	try:
+		user = Users.query.filter_by(User_id=UserId).first()
+	except Exception as e:
+		print(str(e))
+		return InternalServerError()
+	if user:
+		FollowersQueryObj = user.followers.paginate(PageNo,FOLLOWERS_PER_PAGE,False)
+		#if no followers
+		if not FollowersQueryObj.items:
+			return jsonify({"payload":{
+				"success":True,
+				"followers":None,
+				"next_page":False
+			}})
+		#atleast one follower
+		else:
+			followers = UsersObjectToFollowersData(FollowersQueryObj.items)
+			if FollowersQueryObj.has_next:
+				next_page = PageNo+1
+			else:
+				next_page = False
+
+			return jsonify({"payload":{
+				"success":True,
+				"followers":followers,
+				"next":next_page
+			}})
+	return jsonify({"payload":{
+		"success":False,
+		"error_code":402,
+		"error_message":"Unauthorized Access"
+	}})
+
+#api to get 22 users that is being followed by the route calling user
+@users.route('/api/v1.0/followed', methods=['POST'])
+def get_followed():
+	data = json.loads(request.data)["payload"]
+	UserId = data['user']
+	PageNo = data['page']
+	try:
+		user = Users.query.filter_by(User_id=UserId).first()
+	except Exception as e:
+		print(str(e))
+		return InternalServerError()
+	if user:
+		FollowedQueryObj = user.followed.paginate(PageNo, FOLLOWERS_PER_PAGE, False)
+		#if the caller is not following anyone
+		if not FollowedQueryObj.items:
+			return jsonify({"payload": {
+				"success": True,
+				"followed": None,
+				"next_page": False
+			}})
+		#the caller is following atleast one other user
+		else:
+			followed = UsersObjectToFollowersData(FollowedQueryObj.items)
+			if FollowedQueryObj.has_next:
+				next_page = PageNo+1
+			else:
+				next_page = False
+			return jsonify({"payload":{
+				"success":True,
+				"followed":followed,
+				"next":next_page
+			}})
+	return jsonify({"payload": {
+		"success": False,
+		"error_code": 402,
+		"error_message": "Unauthorized Access"
+		}})
+
+
+

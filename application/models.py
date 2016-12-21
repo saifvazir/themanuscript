@@ -61,9 +61,6 @@ class Users(db.Model):
 		return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
 
-
-
-
 class Books(db.Model):
 	__tablename__ = 'Books'
 	id = db.Column(db.Integer, primary_key=True)

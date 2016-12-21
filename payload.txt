@@ -54,3 +54,50 @@ response:
 				'error_code':None,
 				'error_message':"Wrong username or password"
 				}}
+
+####################################################################
+get followers of a particular user(post request)
+{"payload":{
+"user":"defrtyui",
+"page":1
+}}
+
+response:
+#if the user does not hav any followers
+{"payload":{
+    "success":True,
+    "followers":None,
+    "next_page":False
+}})
+
+# data type of followers will be a list of dictionary
+{"payload":{
+    "success":True,
+    "followers":[{}, {}, {}, {}],
+    "next":<next page number that the client should request for in the infinite loading , it will be False if there are no further pages>
+}}
+sample followers =[{"user_id":"", "avatar":"", "username":"", "location":""},{"user_id":"", "avatar":"", "username":"", "location":""}]
+
+
+####################################################################
+get all the users that a calling user follows(post request)
+{"payload":{
+"user":"defrtyui",
+"page":1
+}}
+
+response:
+#if the user does not hav any followers
+{"payload":{
+    "success":True,
+    "followed":None,
+    "next_page":False
+}})
+
+# data type of followers will be a list of dictionary
+{"payload":{
+    "success":True,
+    "followed":[{}, {}, {}, {}],
+    "next":<next page number that the client should request for in the infinite loading , it will be False if there are no further pages>
+}}
+sample followed = [{"user_id":"", "avatar":"", "username":"", "location":""},{"user_id":"", "avatar":"", "username":"", "location":""}]

@@ -2,6 +2,7 @@
 import hashlib
 import datetime
 from application.models import Users,Count,SecretKeys
+from flask import jsonify
 from application import db
 import random
 import string
@@ -10,6 +11,7 @@ from flask_oauth import OAuth
 from requests_oauthlib import OAuth2Session
 
 #app.config.from_pyfile('config.cfg')
+DEFAULT_PROFILE_PIC = 'aws_s3_url'
 
 class Auth:
 	CLIENT_ID = ('619494812049-rua6n3d06bjdu3vmb3e2sokfj14hv8gd'
@@ -37,8 +39,8 @@ def checkusername(Username):
 		return False
 	
 
-def encrypt_password(password):
-	return hashlib.md5(password).hexdigest()
+def encrypt(text):
+	return hashlib.md5(text).hexdigest()
 
 def increaseuserscount():
 	result = Count.query.all()[0]
@@ -60,7 +62,6 @@ def generateuserid(username):
 	except Exception as e:
 		print str(e)
 		raise e
-	print noofusers[0]
 	a = noofusers[0]
 	temp += str(noofusers[0]+1)
 	return {"count":a+1, "temp":temp}
@@ -95,3 +96,27 @@ def generate_keys():
 			raise e
 
 
+def InternalServerError():
+	return jsonify({"payload":{
+	"success":False,
+	"error_code":500,
+	"error_message":"Internal server error"
+	}})
+
+#Function to convert user object to data that is required for the followers page
+def UsersObjectToFollowersData(UsersObj):
+	final = []
+	temp = {"user_id":"", "avatar":"", "username":"", "location":""}
+	for userobj in UsersObj:
+		temp["user_id"] = userobj.User_id
+		temp["username"] = userobj.Username
+		if userobj.Profile_pic:
+			temp["avatar"] = userobj.Profile_pic
+		else:
+			temp["avatar"] = DEFAULT_PROFILE_PIC
+		if userobj.Location:
+			temp["location"] = userobj.Location
+		final.append(temp)
+		temp = {"user_id": "", "avatar": "", "username": "", "location": ""}
+	del temp
+	return final
