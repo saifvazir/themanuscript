@@ -5,20 +5,10 @@ request(post)
 {"payload":{"is_google":0(if not google auth, 1 if google auth), ""Username":"wdq", "Email_id":"waedw", "Password":"wewr"}}
 
 response from the server:
-{"payload":{
-				"success":False,
-				"error_code":500,
-				"error_message":"internal server error"
-				}})
-				//for this display custom internal server error page
 
+{"success":{"status":False},"payload":None, "error":{"code":500, "message":"Internal server error"}}  #format for internal server error(now will be called as InternalServerError()
 
-{"payload":{
-			"success":True,
-			"error_code":None,
-			"error_message": None,
-			"message":"User successfully registered"
-			}}
+{"success":{"status":True, "message":"User successfully registered"},"payload":None}
 
 #######################################################################################################
 login api
@@ -31,29 +21,17 @@ request(post)
 
 
 response:
-{"payload":{
-					'success':False,
-					"error_code":500,
-					"error_message":'internal server error',
-					}}
+InternalServerError()
 
-{"payload":{
-				'success':True,
-				'message': "user authenticated successfully",
-				'token':token,
-				'user_id':id
-				}}
-
-
-				"token will be given back which should be stored cliend side which should be sent for
+{"success":{"status":True, "message":"User authenticated successfully"}, "payload":{"token":token, "user_id":id}}
+id will be a string(32 chars)
+token will be string
+				"token will be given back which should be stored client side which should be sent for
 				further protected data requested along with userid"...make sure to store user_id locally
 
 
-{"payload":{
-				'success':False,
-				'error_code':None,
-				'error_message':"Wrong username or password"
-				}}
+{"success":{"status":False}, "payload":None, "error":{"code":401, "message":"Wrong username or password"}}
+
 
 ####################################################################
 get followers of a particular user(post request)
@@ -64,21 +42,15 @@ get followers of a particular user(post request)
 
 response:
 #if the user does not hav any followers
-{"payload":{
-    "success":True,
-    "followers":None,
-    "next_page":False
-}})
+{"success":{"status":True, "message":"No followers"}, "payload":{"followers":None, "next_page":False}}
 
 # data type of followers will be a list of dictionary
-{"payload":{
-    "success":True,
-    "followers":[{}, {}, {}, {}],
-    "next":<next page number that the client should request for in the infinite loading , it will be False if there are no further pages>
-}}
+{"success":{"status":True, "message":"Followers in payload"}, "payload":{"followers":followers, "next_page":<next page number that the client should request for in the infinite loading , it will be False if there are no further pages>}}
+
 sample followers =[{"user_id":"", "avatar":"", "username":"", "location":""},{"user_id":"", "avatar":"", "username":"", "location":""}]
 
-
+#the supplied user id does not exists
+{"success":{"status":False},"payload":None, "error":{"code":401, "message":"no such user}}
 ####################################################################
 get all the users that a calling user follows(post request)
 {"payload":{
@@ -87,17 +59,33 @@ get all the users that a calling user follows(post request)
 }}
 
 response:
-#if the user does not hav any followers
-{"payload":{
-    "success":True,
-    "followed":None,
-    "next_page":False
-}})
+#if the user does not follow anyone
+{"success":{"status":True, "message":"follows none"}, "payload":{"followed":None, "next_page":False}}
 
 # data type of followers will be a list of dictionary
-{"payload":{
-    "success":True,
-    "followed":[{}, {}, {}, {}],
-    "next":<next page number that the client should request for in the infinite loading , it will be False if there are no further pages>
-}}
+{"success":{"status":True, "message":"Followed users in payload"}, "payload":{"followed":followers, "next_page":<next page number that the client should request for in the infinite loading , it will be False if there are no further pages>}}
+
 sample followed = [{"user_id":"", "avatar":"", "username":"", "location":""},{"user_id":"", "avatar":"", "username":"", "location":""}]
+
+#the supplied user id does not exists
+{"success":{"status":False},"payload":None, "error":{"code":401, "message":"no such user}}
+
+###########################################################################################
+follow a user api(post request)
+{"payload":{"follower":<follower user id>, "followed":<followed user id>}
+
+response:
+{"success":{"status":True, "message":"followed successfully"}, "payload":None}
+
+# if the given user id of any user doesn't exists
+{"success":{"status":False}, "payload":None, "error":{"code":401, "message":"no such user exists"}}
+
+unfollow a user api(post request)
+{"payload":{"follower":<follower user id>, "followed":<followed user id>}
+
+response:
+{"success":{"status":True, "message":"unfollowed successfully"}, "payload":None}
+
+# if the given user id of any user doesn't exists
+{"success":{"status":False}, "payload":None, "error":{"code":401, "message":"no such user exists"}}
+

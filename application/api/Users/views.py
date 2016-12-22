@@ -8,6 +8,7 @@ from application import db
 import random
 from application import application
 from application import auth,jwt
+from application import CreatePayload
 from flask import session,redirect,url_for
 from requests_oauthlib import OAuth2Session
 from boto.s3.connection import S3Connection
@@ -19,7 +20,6 @@ users = Blueprint('users', __name__)
 FOLLOWERS_PER_PAGE = 22
 # DEFAULT_PROFILE_PIC = 'aws_s3_url'
 def generate_auth_token(id):
-
 	id = random.randint(1, 10)
 	application.config['SECRET_KEY'] = SecretKeys.query.filter_by(id=id)
 	return jwt.dumps({'id':id})
@@ -30,12 +30,7 @@ def register():
 	data = json.loads(request.data)["payload"]
 	if(data['is_google']==0):
 		if(checkusername(data['Username'])):
-			return jsonify({"payload":{
-				"success":False,
-				"error_code":None,
-				"error_message":"Username already Exists"
-				}}
-				)
+			return CreatePayload({"status":False}, None, {"code":409, "message":"Username already exists"})
 
 		temp = generateuserid(data['Username'])
 		User_id = temp["temp"]
@@ -54,13 +49,7 @@ def register():
 			print(str(e))
 			return InternalServerError()
 
-
-		return jsonify({"payload":{
-			"success":True,
-			"error_code":None,
-			"error_message": None,
-			"message":"User successfully registered"
-			}})
+		return CreatePayload({"status":True,"message":"user created successfully"},None)
 # else part
 	# google = get_google_auth()
 	# auth_url, state = google.authorization_url(
@@ -135,27 +124,18 @@ def login():
 				return InternalServerError()
 
 			
-			return jsonify({"payload":{
-				'success':True,
-				'message': "user authenticated successfully",
-				'token':token,
-				'user_id':user.User_id
-				}})
-		
+			return CreatePayload({"status":True, "message":"User authenticates successfully"}, {
+				"token": token,
+				"user_id": user.User_id
+			})
+
+
 		#wrong password
 		else:
-			return jsonify({"payload":{
-				'success':False,
-				'error_code':None,
-				'error_message':"Wrong username or password"
-				}})
+			return CreatePayload({"status":False}, None, {"code":401, "message":"wrong username or password"})
 
 	# no such user exists
-	return jsonify({
-		"success":False,
-		"error_code":None,
-		'error_message':"Wrong username or password"
-		})
+	return CreatePayload({"status":False}, None, {"code":401, "message":"wrong username or password"})
 
 
 @users.route('/protected')
@@ -177,7 +157,7 @@ def set_token():
 
 #api to get 22 followers one at a time
 @auth.login_required
-@users.route('/api/v1.0/followers', methods=['POST'])
+@users.route('/api/v1.0/get_followers', methods=['POST'])
 def get_followers():
 	data = json.loads(request.data)["payload"]
 	UserId = data['user']
@@ -191,11 +171,7 @@ def get_followers():
 		FollowersQueryObj = user.followers.paginate(PageNo,FOLLOWERS_PER_PAGE,False)
 		#if no followers
 		if not FollowersQueryObj.items:
-			return jsonify({"payload":{
-				"success":True,
-				"followers":None,
-				"next_page":False
-			}})
+			return CreatePayload({"status":True,"message":"No followers"},{"followers":None, "next_page":False})
 		#atleast one follower
 		else:
 			followers = UsersObjectToFollowersData(FollowersQueryObj.items)
@@ -204,19 +180,12 @@ def get_followers():
 			else:
 				next_page = False
 
-			return jsonify({"payload":{
-				"success":True,
-				"followers":followers,
-				"next":next_page
-			}})
-	return jsonify({"payload":{
-		"success":False,
-		"error_code":402,
-		"error_message":"Unauthorized Access"
-	}})
+			return CreatePayload({"status":True, "message":"Followers in payload"},{"followers":followers,"next_page":next_page})
+
+	return CreatePayload({"status":False},None,{"code":401, "message" :"no such user"})
 
 #api to get 22 users that is being followed by the route calling user
-@users.route('/api/v1.0/followed', methods=['POST'])
+@users.route('/api/v1.0/get_followed', methods=['POST'])
 def get_followed():
 	data = json.loads(request.data)["payload"]
 	UserId = data['user']
@@ -230,11 +199,7 @@ def get_followed():
 		FollowedQueryObj = user.followed.paginate(PageNo, FOLLOWERS_PER_PAGE, False)
 		#if the caller is not following anyone
 		if not FollowedQueryObj.items:
-			return jsonify({"payload": {
-				"success": True,
-				"followed": None,
-				"next_page": False
-			}})
+			return CreatePayload({"status":True,"message":"follows none"},{"followed":None, "next_page":False})
 		#the caller is following atleast one other user
 		else:
 			followed = UsersObjectToFollowersData(FollowedQueryObj.items)
@@ -242,16 +207,56 @@ def get_followed():
 				next_page = PageNo+1
 			else:
 				next_page = False
-			return jsonify({"payload":{
-				"success":True,
-				"followed":followed,
-				"next":next_page
-			}})
-	return jsonify({"payload": {
-		"success": False,
-		"error_code": 402,
-		"error_message": "Unauthorized Access"
-		}})
+			return CreatePayload({"status":True, "message":"Followed users in payload"},{"followed":followed,"next_page":next_page})
+	return CreatePayload({"status":False},None,{"code":401, "message" :"no such user"})
 
+################################################folllow and unfollow link###########################################
 
+@users.route('/api/v1.0/follow',methods=['POST'])
+def follow():
 
+	data = json.loads(request.data)["payload"]
+	FollowerId = data['follower']
+	FollowedId = data['followed']
+	try:
+		FollowerUser = Users.query.filter_by(User_id=FollowerId).first()
+		FollowedUser = Users.query.filter_by(User_id=FollowedId).first()
+	except Exception as e:
+		print(str(e))
+		return InternalServerError()
+	if FollowerUser and FollowedUser:
+		FollowerUser = FollowerUser.follow(FollowedUser)
+		try:
+			db.session.add(FollowerUser)
+			db.session.commit()
+		except Exception as e:
+			print(str(e))
+			db.session.rollback()
+			return InternalServerError()
+
+		return CreatePayload({"status":True, "message":"followed successfully"},None)
+	return CreatePayload({"status":False}, None, {"code":401,"message":"no such user exists"} )
+#unfollow api
+@users.route('/api/v1.0/unfollow', methods=['POST'])
+def unfollow():
+	data = json.loads(request.data)["payload"]
+	FollowerId = data['follower']
+	FollowedId = data['followed']
+	try:
+		FollowerUser = Users.query.filter_by(User_id=FollowerId).first()
+		FollowedUser = Users.query.filter_by(User_id=FollowedId).first()
+	except Exception as e:
+		print(str(e))
+		return InternalServerError()
+	if FollowerUser and FollowedUser:
+		FollowerUser = FollowerUser.unfollow(FollowedUser)
+		try:
+			db.session.add(FollowerUser)
+			db.session.commit()
+		except Exception as e:
+			print(str(e))
+			db.session.rollback()
+			return InternalServerError()
+
+		return CreatePayload({"status":True, "message":"unfollowed successfully"},None)
+	return CreatePayload({"status":False}, None, {"code":401,"message":"no such user exists"} )

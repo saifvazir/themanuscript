@@ -40,3 +40,8 @@ def auth_error():
     	"error_code":401,
     	"error_message":"Unauthorized"
     	}})
+
+def CreatePayload(success, payload, error=None ):
+    if error:
+        return jsonify({"success":success, "payload":payload, "error":error})
+    return jsonify({"success":success, "payload":payload})

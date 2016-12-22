@@ -97,11 +97,7 @@ def generate_keys():
 
 
 def InternalServerError():
-	return jsonify({"payload":{
-	"success":False,
-	"error_code":500,
-	"error_message":"Internal server error"
-	}})
+	return jsonify({"success":{"status":False}, "payload":None, "error":{"code":500, "message":"Internal server error"}})
 
 #Function to convert user object to data that is required for the followers page
 def UsersObjectToFollowersData(UsersObj):
