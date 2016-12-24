@@ -1,15 +1,15 @@
+
 from flask import Flask, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-import os
+
 from application.api.Users.views import users
-from application import db
-from application import models
+from application.api.Languages.views import languages
 
 application = Flask(__name__)
 CORS(application)
 
 application.register_blueprint(users)
+application.register_blueprint(languages)
 
 application.config.from_object('config.TestingConfig')
 

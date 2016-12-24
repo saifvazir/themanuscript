@@ -13,9 +13,10 @@ auth  = HTTPTokenAuth('Bearer')
 
 @auth.verify_token
 def verify_token(token):
-    temp = json.loads(token)
-    token = temp["token"]
-    id = temp["id"]
+    temp = token
+    temp_list = temp.split('.')
+    id = temp_list[-1]
+    del temp_list
     try:
         user = models.Users.query.filter_by(User_id=id).first()
     except Exception as e:

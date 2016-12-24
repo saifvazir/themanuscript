@@ -1,9 +1,8 @@
+
 from application.api.Users.functions import *
 from flask import request,jsonify,Blueprint
-import requests
 import json
-from application.models import Users,Count, SecretKeys
-from flask import g
+from application.models import Users,SecretKeys
 from application import db
 import random
 from application import application
@@ -100,6 +99,7 @@ def login():
 		if(encrypt(data['Password']) == user.Password):
 			# session['logged_in'] = True
 			token = generate_auth_token(user.User_id)
+			token += '.'+user.User_id
 			curr_datetime = datetime.datetime.now()
 			curr_datetime += datetime.timedelta(days=4)
 			application.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy dog'

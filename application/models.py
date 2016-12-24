@@ -9,6 +9,7 @@ class Count(db.Model):
 	__tablename__ = 'Count'
 	userscount = db.Column(db.Integer, primary_key=True)
 	bookscount = db.Column(db.Integer,primary_key=True)
+	languagescount = db.Column(db.Integer)
 
 
 followers = db.Table('followers',
@@ -16,7 +17,13 @@ followers = db.Table('followers',
 	db.Column('followed_id', db.Integer, db.ForeignKey("Users.id"))
 	)
 
-
+preference = db.Table('preference',
+		db.Column('uid', db.Integer, db.ForeignKey("Users.id"), nullable=False),
+		db.Column('lid', db.Integer, db.ForeignKey("Languages.id"), nullable=False),
+		db.PrimaryKeyConstraint('uid', 'lid')
+		)
+#primary language
+#is_first_login
 class Users(db.Model):
 	__tablename__ = 'Users'
 	id = db.Column(db.Integer, primary_key=True)
@@ -25,8 +32,8 @@ class Users(db.Model):
 	Email_id = db.Column(db.String(120), index=True, unique=True, nullable=False)
 	Password= db.Column(db.String(40),nullable=False)
 	Profile_pic= db.Column(db.String(100))
-	Age=db.Column(db.DateTime)
-	Languages=db.Column(db.String(100))
+	Dob = db.Column(db.Date)
+	Primary_language = db.Column(db.String(15))
 	Location=db.Column(db.String(50))
 	Genres=db.Column(db.String(150))
 	Date_entry = db.Column(db.DateTime)
@@ -37,6 +44,11 @@ class Users(db.Model):
 								secondaryjoin= (followers.c.followed_id == id),
 								backref= db.backref('followers', lazy='dynamic'),
 								lazy='dynamic')
+
+	prefers = db.relationship('Languages',
+								secondary=preference,
+								backref=db.backref('was_preferred',lazy='dynamic')
+								)
 
 	def __init__(self,id,User_id,Username,Email_id,Password,Profile_pic=None,Age=None,Languages=None,Location=None,Genres=None, Dateentry=None):
 		self.id = id
@@ -72,6 +84,18 @@ class Books(db.Model):
 	Content_Id=db.Column(db.String(30))
 	Author_id=db.Column(db.String(30))
 	Story_type=db.Column(db.String(30),nullable=False)
+
+class Languages(db.Model):
+	__tablename__ = 'Languages'
+	id = db.Column(db.Integer,primary_key=True)
+	Language_id = db.Column(db.String(20),unique=True)
+	Name = db.Column(db.String(15))
+
+	def __init__(self,id,Language_id,Name):
+		self.id = id
+		self.Language_id = Language_id
+		self.Name = Name
+
 
 
 class SecretKeys(db.Model):
