@@ -10,18 +10,30 @@ class Count(db.Model):
 	userscount = db.Column(db.Integer, primary_key=True)
 	bookscount = db.Column(db.Integer,primary_key=True)
 	languagescount = db.Column(db.Integer)
+	genrescount = db.Column(db.Integer)
 
 
+#for followers and following
 followers = db.Table('followers',
 	db.Column('follower_id', db.Integer, db.ForeignKey("Users.id")),
 	db.Column('followed_id', db.Integer, db.ForeignKey("Users.id"))
 	)
 
+#for preferring language
 preference = db.Table('preference',
 		db.Column('uid', db.Integer, db.ForeignKey("Users.id"), nullable=False),
 		db.Column('lid', db.Integer, db.ForeignKey("Languages.id"), nullable=False),
 		db.PrimaryKeyConstraint('uid', 'lid')
 		)
+
+#for subscribing to genres
+subscription = db.Table('subscription',
+				db.Column('uid', db.Integer, db.ForeignKey("Users.id"),nullable=False),
+				db.Column('gid', db.Integer, db.ForeignKey("Genres.id"),nullable=False),
+				db.PrimaryKeyConstraint('uid','gid')
+				)
+
+
 #primary language
 #is_first_login
 class Users(db.Model):
@@ -47,8 +59,14 @@ class Users(db.Model):
 
 	prefers = db.relationship('Languages',
 								secondary=preference,
-								backref=db.backref('was_preferred',lazy='dynamic')
-								)
+								backref=db.backref('was_preferred',lazy='dynamic'),
+								lazy='dynamic')
+
+	subscribes = db.relationship('Genres',
+								 secondary=subscription,
+								 backref = db.backref('subscribers',lazy='dynamic'),
+								 lazy = 'dynamic'
+								 )
 
 	def __init__(self,id,User_id,Username,Email_id,Password,Profile_pic=None,Age=None,Languages=None,Location=None,Genres=None, Dateentry=None):
 		self.id = id
@@ -72,6 +90,35 @@ class Users(db.Model):
 	def is_following(self,user):
 		return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
+####################for language relationship ##################################
+
+	def prefer(self,language):
+		if not self.already_prefers(language):
+			self.prefers.append(language)
+			return self
+
+	def unprefer(self,language):
+		if self.already_prefers(language):
+			self.prefers.remove(language)
+			return self
+
+	def already_prefers(self,language):
+		return self.prefers.filter(preference.c.lid == language.id).count() > 0
+
+#############################for subscribing to genres##################################
+
+	def subscribe(self,genre):
+		if not self.already_subscribed(genre):
+			self.subscribes.append(genre)
+			return self
+
+	def unsubscribe(self,genre):
+		if self.already_subscribed(genre):
+			self.subscribes.remove(genre)
+			return self
+
+	def already_subscribed(self,genre):
+		return self.subscribes.filter(subscription.c.gid == genre.id).count() > 0
 
 class Books(db.Model):
 	__tablename__ = 'Books'
@@ -95,6 +142,17 @@ class Languages(db.Model):
 		self.id = id
 		self.Language_id = Language_id
 		self.Name = Name
+
+class Genres(db.Model):
+	__tablename__ = 'Genres'
+	id = db.Column(db.Integer, primary_key=True)
+	Genre_id = db.Column(db.String(15), unique=True)
+	Genre_type = db.Column(db.String(50))
+
+	def __init__(self,id, Genre_id, Genre_type):
+		self.id = id
+		self.Genre_id = Genre_id
+		self.Genere_type = Genre_type
 
 
 

@@ -25,3 +25,6 @@ def increaselanguagescount():
 		db.session.rollback()
 		print(str(e))
 		raise e
+
+#languages
+# Hindi Bengali Marathi Gujarati Tamil Telugu English

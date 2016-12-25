@@ -4,12 +4,14 @@ from flask_cors import CORS
 
 from application.api.Users.views import users
 from application.api.Languages.views import languages
+from application.api.Genres.views import genres
 
 application = Flask(__name__)
 CORS(application)
 
 application.register_blueprint(users)
 application.register_blueprint(languages)
+application.register_blueprint(genres)
 
 application.config.from_object('config.TestingConfig')
 
