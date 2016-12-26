@@ -1,6 +1,7 @@
 
 from application.models import Count
 from application import db
+from application import application
 
 def GenerateGenreId(genres):
 	temp = '#GOBJ'
@@ -9,7 +10,7 @@ def GenerateGenreId(genres):
 	try:
 		noofgenres = Count.query.with_entities(Count.genrescount).first()
 	except Exception as e:
-		print str(e)
+		application.logger.debug(str(e))
 		raise e
 	a = noofgenres[0]
 	temp += str(noofgenres[0]+1)
@@ -23,7 +24,7 @@ def increasegenrescount():
 		db.session.commit()
 	except Exception as e:
 		db.session.rollback()
-		print(str(e))
+		application.logger.debug(str(e))
 		raise e
 
 #Genres types

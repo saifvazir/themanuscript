@@ -1,15 +1,14 @@
 
-from flask import request,Blueprint
+from flask import request,make_response
 from application.api.Genres.functions import *
 from application.models import Genres
 import json
 from application.api.Users.functions import InternalServerError
 from application import db
 from application import CreatePayload
+from application import application
 
-
-genres = Blueprint('genres', __name__)
-
+from application.api.Genres import genres
 #api to get all the languages
 @genres.route('/api/v1.0/get_genres')
 def get_genres():
@@ -17,8 +16,8 @@ def get_genres():
 	try:
 		AllGenres = Genres.query.all()
 	except Exception as e:
-		print str(e)
-		return InternalServerError()
+		application.logger.debug(str(e))
+		return make_response(InternalServerError(),500)
 	temp={"GenId":"", "Genre":""}
 	final=[]
 	for Genre in AllGenres:
@@ -27,7 +26,7 @@ def get_genres():
 		final.append(temp)
 		temp={"GenId":"", "Genre":""}
 	del temp
-	return CreatePayload({"status":"True", "message":"payload contains all data"},final)
+	return make_response(CreatePayload({"status":"True", "message":"payload contains all data"},final),200)
 
 
 #apis for admin to add one language at a time
@@ -45,6 +44,6 @@ def add_genres():
 		db.session.commit()
 		increasegenrescount()
 	except Exception as e:
-		print str(e)
-		return InternalServerError()
-	return CreatePayload({"status":True, "message":"Genre added successfully"},None)
+		application.logger.debug(str(e))
+		return make_response(InternalServerError(),500)
+	return make_response(CreatePayload({"status":True, "message":"Genre added successfully"},None),200)

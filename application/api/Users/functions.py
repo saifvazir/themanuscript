@@ -5,6 +5,7 @@ from application.models import Users,Count,SecretKeys
 from flask import jsonify
 from application import db
 import random
+from application import application
 import string
 #from TMS import app
 from flask_oauth import OAuth
@@ -30,14 +31,30 @@ def checkusername(Username):
 	try:
 		result = Users.query.filter_by(Username=Username).first()
 	except Exception as e:
-		print(str(e))
+		db.session.rollback()
+		application.logger.debug(str(e))
 		raise e
 
 	if(result):
 		return True
 	else:
 		return False
-	
+
+
+def checkemail(email):
+	result = ""
+	try:
+		result = Users.query.filter_by(Email_id=email).first()
+	except Exception as e:
+		db.session.rollback()
+		application.logger.debug(str(e))
+		raise e
+
+	if (result):
+		return True
+	else:
+		return False
+
 
 def encrypt(text):
 	return hashlib.md5(text).hexdigest()
@@ -49,7 +66,7 @@ def increaseuserscount():
 		db.session.commit()
 	except Exception as e:
 		db.session.rollback()
-		print(str(e))
+		application.logger.debug(str(e))
 		raise e
 
 
@@ -60,7 +77,8 @@ def generateuserid(username):
 	try:
 		noofusers = Count.query.with_entities(Count.userscount).first()
 	except Exception as e:
-		print str(e)
+		application.logger.debug(str(e))
+		db.session.rollback()
 		raise e
 	a = noofusers[0]
 	temp += str(noofusers[0]+1)
@@ -92,6 +110,7 @@ def generate_keys():
 			db.session.add(new_key)
 			db.session.commit()
 		except Exception as e:
+			application.logger.debug(str(e))
 			db.session.rollback()
 			raise e
 

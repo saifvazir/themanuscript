@@ -1,15 +1,15 @@
 
-from flask import request,jsonify,Blueprint
+from flask import request,make_response
 from application.api.Languages.functions import *
 from application.models import Languages
 import json
 from application.api.Users.functions import InternalServerError
 from application import db
 from application import CreatePayload
+from application import application
 
 
-languages = Blueprint('languages', __name__)
-
+from application.api.Languages import languages
 #api to get all the languages
 @languages.route('/api/v1.0/get_languages')
 def get_languages():
@@ -17,8 +17,8 @@ def get_languages():
 	try:
 		AllLanguages = Languages.query.all()
 	except Exception as e:
-		print str(e)
-		return InternalServerError()
+		application.logger.debug(str(e))
+		return make_response(InternalServerError(),500)
 	temp={"LangId":"", "Lang":""}
 	final=[]
 	for lan in AllLanguages:
@@ -27,7 +27,7 @@ def get_languages():
 		final.append(temp)
 		temp={"LangId":"", "Lang":""}
 	del temp
-	return CreatePayload({"status":"True", "message":"payload contains all data"},final)
+	return make_response(CreatePayload({"status":"True", "message":"payload contains all data"},final),200)
 
 
 #apis for admin to add one language at a time
@@ -45,6 +45,6 @@ def add_language():
 		db.session.commit()
 		increaselanguagescount()
 	except Exception as e:
-		print str(e)
-		return InternalServerError()
-	return CreatePayload({"status":True, "message":"Language added successfully"},None)
+		application.logger.debug(str(e))
+		return make_response(InternalServerError(),500)
+	return make_response(CreatePayload({"status":True, "message":"Language added successfully"},None),200)

@@ -19,7 +19,7 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql://user@localhost/foo'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://ankitesh:tigerpass@ankitesh.mysql.pythonanywhere-services.com/ankitesh$test'
 
 
 class TestingConfig(Config):

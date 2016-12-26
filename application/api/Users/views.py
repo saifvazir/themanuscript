@@ -1,41 +1,43 @@
 
 from application.api.Users.functions import *
-from flask import request,jsonify,Blueprint
+from flask import request,jsonify,make_response
 import json
 from application.models import Users,SecretKeys
 from application import db
 import random
 from application import application
-from application import auth,jwt
 from application import CreatePayload
 from flask import session,redirect,url_for
 from requests_oauthlib import OAuth2Session
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 
+from application.api.Users import users
+from application import auth,jwt
 oauth = OAuth()
-users = Blueprint('users', __name__)
-
 FOLLOWERS_PER_PAGE = 22
 # DEFAULT_PROFILE_PIC = 'aws_s3_url'
+
 def generate_auth_token(id):
 	id = random.randint(1, 10)
 	application.config['SECRET_KEY'] = SecretKeys.query.filter_by(id=id)
 	return jwt.dumps({'id':id})
-
 
 @users.route('/api/v1.0/register', methods=['POST'])
 def register():
 	data = json.loads(request.data)["payload"]
 	if(data['is_google']==0):
 		if(checkusername(data['Username'])):
-			return CreatePayload({"status":False}, None, {"code":409, "message":"Username already exists"})
+			return make_response(CreatePayload({"status":False}, None, {"code":400, "message":"Username already exists"}),400)
+		if(checkemail(data["Email_id"])):
+			return make_response(CreatePayload({"status":False}, None, {"code":400, "message":"Email already registered"}),400)
 
 		temp = generateuserid(data['Username'])
 		User_id = temp["temp"]
 		id = temp["count"]
 		Username = data['Username']
 		Email_id = data['Email_id']
+		#vaidate email id
 		pwd = encrypt(data['Password'])
 		nw = datetime.datetime.now()
 		new_entry = Users(id = id, User_id=encrypt(User_id),Username=Username,Email_id=Email_id,Password=pwd,Dateentry=nw)
@@ -45,10 +47,10 @@ def register():
 			increaseuserscount()
 		except Exception as e:
 			db.session.rollback()
-			print(str(e))
+			application.logger.debug(str(e))
 			return InternalServerError()
 
-		return CreatePayload({"status":True,"message":"user created successfully"},None)
+		return make_response(CreatePayload({"status":True,"message":"user created successfully"},None),200)
 # else part
 	# google = get_google_auth()
 	# auth_url, state = google.authorization_url(
@@ -84,6 +86,28 @@ def register():
 	# print res.read()
 	# return res.read()
 
+#end point for validating username and email id
+@users.route('/api/v1.0/validate')
+def validate():
+	try:
+		username = request.args.get('username')
+		#check username
+		if(checkusername(username)):
+			return make_response(CreatePayload({"status":False}, None, {"code":400, "message":"Username already exists"}),400)
+		else:
+			return make_response(CreatePayload({"status":True,"message":"username can be taken"}, None),200)
+	except Exception as e:
+		try:
+			email = request.args.get('email')
+			#check email
+			if(checkemail(email)):
+				return make_response(CreatePayload({"status":False}, None, {"code":400, "message":"already registered with this mail"}),400)
+
+			else:
+				return make_response(CreatePayload({"status": True, "message":"email allowed"}, None), 200)
+		except Exception as e1:
+			application.logger.debug(str(e1))
+	return make_response(CreatePayload({"status":False}, None, {"code":400, "message":"bad request"}),400)
 
 
 @users.route('/api/v1.0/login',methods=['POST'])
@@ -93,8 +117,8 @@ def login():
 	try:
 		user = Users.query.filter_by(Username = data['Username']).first()
 	except Exception as e:
-		print(str(e))
-		raise e
+		application.logger.debug(str(e))
+		return make_response(InternalServerError(),500)
 	if user:
 		if(encrypt(data['Password']) == user.Password):
 			# session['logged_in'] = True
@@ -120,22 +144,22 @@ def login():
 				db.session.commit()
 			except Exception as e:
 				db.session.rollback()
-				print(str(e))
-				return InternalServerError()
+				application.logger.debug(str(e))
+				return make_response(InternalServerError(),500)
 
 			
-			return CreatePayload({"status":True, "message":"User authenticates successfully"}, {
+			return make_response(CreatePayload({"status":True, "message":"User authenticates successfully"}, {
 				"token": token,
 				"user_id": user.User_id
-			})
+			}),200)
 
 
 		#wrong password
 		else:
-			return CreatePayload({"status":False}, None, {"code":401, "message":"wrong username or password"})
+			return make_response(CreatePayload({"status":False}, None, {"code":401, "message":"wrong username or password"}),401)
 
 	# no such user exists
-	return CreatePayload({"status":False}, None, {"code":401, "message":"wrong username or password"})
+	return make_response(CreatePayload({"status":False}, None, {"code":401, "message":"wrong username or password"}),401)
 
 
 @users.route('/protected')
@@ -165,13 +189,13 @@ def get_followers():
 	try:
 		user = Users.query.filter_by(User_id=UserId).first()
 	except Exception as e:
-		print(str(e))
-		return InternalServerError()
+		application.logger.debug(str(e))
+		return make_response(InternalServerError(),500)
 	if user:
 		FollowersQueryObj = user.followers.paginate(PageNo,FOLLOWERS_PER_PAGE,False)
 		#if no followers
 		if not FollowersQueryObj.items:
-			return CreatePayload({"status":True,"message":"No followers"},{"followers":None, "next_page":False})
+			return make_response(CreatePayload({"status":True,"message":"No followers"},{"followers":None, "next_page":False}),200)
 		#atleast one follower
 		else:
 			followers = UsersObjectToFollowersData(FollowersQueryObj.items)
@@ -180,9 +204,9 @@ def get_followers():
 			else:
 				next_page = False
 
-			return CreatePayload({"status":True, "message":"Followers in payload"},{"followers":followers,"next_page":next_page})
+			return make_response(CreatePayload({"status":True, "message":"Followers in payload"},{"followers":followers,"next_page":next_page}),200)
 
-	return CreatePayload({"status":False},None,{"code":401, "message" :"no such user"})
+	return make_response(CreatePayload({"status":False},None,{"code":401, "message" :"no such user"}),401)
 
 #api to get 22 users that is being followed by the route calling user
 @users.route('/api/v1.0/get_followed', methods=['POST'])
@@ -193,13 +217,13 @@ def get_followed():
 	try:
 		user = Users.query.filter_by(User_id=UserId).first()
 	except Exception as e:
-		print(str(e))
-		return InternalServerError()
+		application.logger.debug(str(e))
+		return make_response(InternalServerError(),500)
 	if user:
 		FollowedQueryObj = user.followed.paginate(PageNo, FOLLOWERS_PER_PAGE, False)
 		#if the caller is not following anyone
 		if not FollowedQueryObj.items:
-			return CreatePayload({"status":True,"message":"follows none"},{"followed":None, "next_page":False})
+			return make_response(CreatePayload({"status":True,"message":"follows none"},{"followed":None, "next_page":False}),200)
 		#the caller is following atleast one other user
 		else:
 			followed = UsersObjectToFollowersData(FollowedQueryObj.items)
@@ -207,8 +231,8 @@ def get_followed():
 				next_page = PageNo+1
 			else:
 				next_page = False
-			return CreatePayload({"status":True, "message":"Followed users in payload"},{"followed":followed,"next_page":next_page})
-	return CreatePayload({"status":False},None,{"code":401, "message" :"no such user"})
+			return make_response(CreatePayload({"status":True, "message":"Followed users in payload"},{"followed":followed,"next_page":next_page}),200)
+	return make_response(CreatePayload({"status":False},None,{"code":401, "message" :"no such user"}),401)
 
 ################################################folllow and unfollow link###########################################
 
@@ -222,20 +246,20 @@ def follow():
 		FollowerUser = Users.query.filter_by(User_id=FollowerId).first()
 		FollowedUser = Users.query.filter_by(User_id=FollowedId).first()
 	except Exception as e:
-		print(str(e))
-		return InternalServerError()
+		application.logger.debug(str(e))
+		return make_response(InternalServerError(),500)
 	if FollowerUser and FollowedUser:
 		FollowerUser = FollowerUser.follow(FollowedUser)
 		try:
 			db.session.add(FollowerUser)
 			db.session.commit()
 		except Exception as e:
-			print(str(e))
+			application.logger.debug(str(e))
 			db.session.rollback()
-			return InternalServerError()
+			return make_response(InternalServerError(),500)
 
-		return CreatePayload({"status":True, "message":"followed successfully"},None)
-	return CreatePayload({"status":False}, None, {"code":401,"message":"no such user exists"} )
+		return make_response(CreatePayload({"status":True, "message":"followed successfully"},None),201)
+	return make_response(CreatePayload({"status":False}, None, {"code":401,"message":"no such user exists"} ),400)
 #unfollow api
 @users.route('/api/v1.0/unfollow', methods=['POST'])
 def unfollow():
@@ -246,17 +270,17 @@ def unfollow():
 		FollowerUser = Users.query.filter_by(User_id=FollowerId).first()
 		FollowedUser = Users.query.filter_by(User_id=FollowedId).first()
 	except Exception as e:
-		print(str(e))
-		return InternalServerError()
+		application.logger.debug(str(e))
+		return make_response(InternalServerError(),500)
 	if FollowerUser and FollowedUser:
 		FollowerUser = FollowerUser.unfollow(FollowedUser)
 		try:
 			db.session.add(FollowerUser)
 			db.session.commit()
 		except Exception as e:
-			print(str(e))
+			application.logger.debug(str(e))
 			db.session.rollback()
-			return InternalServerError()
+			return make_response(InternalServerError(),500)
 
-		return CreatePayload({"status":True, "message":"unfollowed successfully"},None)
-	return CreatePayload({"status":False}, None, {"code":401,"message":"no such user exists"} )
+		return make_response(CreatePayload({"status":True, "message":"unfollowed successfully"},None),201)
+	return make_response(CreatePayload({"status":False}, None, {"code":401,"message":"no such user exists"} ),401)

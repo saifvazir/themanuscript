@@ -1,6 +1,7 @@
 
 from application.models import Count
 from application import db
+from application import application
 
 def GenerateLanguageId(language):
 	temp = '#LOBJ'
@@ -9,7 +10,7 @@ def GenerateLanguageId(language):
 	try:
 		nooflanguages = Count.query.with_entities(Count.languagescount).first()
 	except Exception as e:
-		print str(e)
+		application.logger.debug(str(e))
 		raise e
 	a = nooflanguages[0]
 	temp += str(nooflanguages[0]+1)
@@ -23,7 +24,7 @@ def increaselanguagescount():
 		db.session.commit()
 	except Exception as e:
 		db.session.rollback()
-		print(str(e))
+		application.logger.debug(str(e))
 		raise e
 
 #languages
