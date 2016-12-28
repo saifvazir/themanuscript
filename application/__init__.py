@@ -9,7 +9,7 @@ from flask_cors import CORS
 
 application = Flask(__name__)
 CORS(application)
-application.config.from_object('config.TestingConfig')
+application.config.from_object('config.DevelopmentConfig')
 db = SQLAlchemy(application)
 import models
 
