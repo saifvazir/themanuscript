@@ -1,5 +1,6 @@
 
 registration api
+ankitesh.pythonanywhere.com/api/v1.0/register
 
 request(post)
 {"payload":{"is_google":0(if not google auth, 1 if google auth), ""Username":"wdq", "Email_id":"waedw", "Password":"wewr"}}
@@ -13,6 +14,7 @@ response from the server:
 #######################################################################################################
 login api
 request(post)
+ankitesh.pythonanywhere.com/api/v1.0/login
 
 {"payload":{
 "Username":"desrdf",
@@ -35,6 +37,8 @@ token will be string
 
 ####################################################################
 get followers of a particular user(post request)
+ankitesh.pythonanywhere.com/api/v1.0/get_followers
+
 {"payload":{
 "user":"defrtyui",
 "page":1
@@ -53,6 +57,7 @@ sample followers =[{"user_id":"", "avatar":"", "username":"", "location":""},{"u
 {"success":{"status":False},"payload":None, "error":{"code":401, "message":"no such user}}
 ####################################################################
 get all the users that a calling user follows(post request)
+ankitesh.pythonanywhere.com/api/v1.0/get_followed
 {"payload":{
 "user":"defrtyui",
 "page":1
@@ -72,6 +77,8 @@ sample followed = [{"user_id":"", "avatar":"", "username":"", "location":""},{"u
 
 ###########################################################################################
 follow a user api(post request)
+ankitesh.pythonanywhere.com/api/v1.0/follow
+
 {"payload":{"follower":<follower user id>, "followed":<followed user id>}
 
 response:
@@ -81,6 +88,9 @@ response:
 {"success":{"status":False}, "payload":None, "error":{"code":401, "message":"no such user exists"}}
 
 unfollow a user api(post request)
+ankitesh.pythonanywhere.com/api/v1.0/unfollow
+
+
 {"payload":{"follower":<follower user id>, "followed":<followed user id>}
 
 response:
@@ -89,3 +99,8 @@ response:
 # if the given user id of any user doesn't exists
 {"success":{"status":False}, "payload":None, "error":{"code":401, "message":"no such user exists"}}
 
+
+#############
+api to check username and email uniqueness
+http://ankitesh.pythonanywhere.com/api/v1.0/validate?username=dert
+http://ankitesh.pythonanywhere.com/api/v1.0/validate?email=dertaswsert

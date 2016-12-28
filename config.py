@@ -23,7 +23,7 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
-    DEBUG = True
+    DEBUG = False
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://ankitesh:tiger@localhost/test'
 

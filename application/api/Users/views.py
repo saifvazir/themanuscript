@@ -89,24 +89,21 @@ def register():
 #end point for validating username and email id
 @users.route('/api/v1.0/validate')
 def validate():
-	try:
-		username = request.args.get('username')
-		#check username
+	username = request.args.get('username')
+	email = request.args.get('email')
+	print username
+	if(username != None):
 		if(checkusername(username)):
 			return make_response(CreatePayload({"status":False}, None, {"code":400, "message":"Username already exists"}),400)
 		else:
 			return make_response(CreatePayload({"status":True,"message":"username can be taken"}, None),200)
-	except Exception as e:
-		try:
-			email = request.args.get('email')
-			#check email
-			if(checkemail(email)):
-				return make_response(CreatePayload({"status":False}, None, {"code":400, "message":"already registered with this mail"}),400)
+	elif(email != None):
+		if(checkemail(email)):
+			return make_response(CreatePayload({"status":False}, None, {"code":400, "message":"already registered with this mail"}),400)
 
-			else:
-				return make_response(CreatePayload({"status": True, "message":"email allowed"}, None), 200)
-		except Exception as e1:
-			application.logger.debug(str(e1))
+		else:
+			return make_response(CreatePayload({"status": True, "message":"email allowed"}, None), 200)
+
 	return make_response(CreatePayload({"status":False}, None, {"code":400, "message":"bad request"}),400)
 
 

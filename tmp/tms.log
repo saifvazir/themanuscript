@@ -10,3 +10,7 @@
 2016-12-26 13:57:32,460 ERROR: esrdtf [in application.py:28]
 2016-12-26 13:57:37,661 DEBUG: integer division or modulo by zero [in application.py:36]
 2016-12-26 13:58:07,028 INFO: tms startup [in application.py:27]
+2016-12-26 19:42:33,261 INFO: tms startup [in /home/ankitesh/TMS/Tms/application/__init__.py:73]
+2016-12-26 19:42:59,810 INFO: tms startup [in /home/ankitesh/TMS/Tms/application/__init__.py:73]
+2016-12-26 19:43:57,300 INFO: tms startup [in /home/ankitesh/TMS/Tms/application/__init__.py:73]
+2016-12-26 19:46:43,274 INFO: tms startup [in /home/ankitesh/TMS/Tms/application/__init__.py:73]
